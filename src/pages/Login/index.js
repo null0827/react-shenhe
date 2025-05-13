@@ -1,6 +1,6 @@
 import "./index.scss";
 import { Card, Form, Input, Button, message } from "antd";
-import "@ant-design/v5-patch-for-react-19";
+//import "@ant-design/v5-patch-for-react-19";
 import logo from "@/assets/logo.png";
 import { useDispatch } from "react-redux";
 import { fetchLogin } from "@/store/modules/user";
