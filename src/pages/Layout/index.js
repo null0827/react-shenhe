@@ -63,7 +63,7 @@ const GeekLayout = () => {
   return (
     <Layout>
       <Header className="header">
-        <div className="logo" />
+        {/* <div className="logo" /> */}
         <div className="user-info">
           <span className="user-name">{name}</span>
           <span className="user-logout">

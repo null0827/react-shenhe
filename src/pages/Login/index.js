@@ -1,7 +1,7 @@
 import "./index.scss";
 import { Card, Form, Input, Button, message } from "antd";
 //import "@ant-design/v5-patch-for-react-19";
-import logo from "@/assets/logo.png";
+//import logo from "@/assets/logo.png";
 import { useDispatch } from "react-redux";
 import { fetchLogin } from "@/store/modules/user";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ const Login = () => {
   return (
     <div className="login">
       <Card className="login-container">
-        <img className="login-logo" src={logo} alt="" />
+        {/* <img className="login-logo" src={logo} alt="" /> */}
         <Form onFinish={onFinish} validateTrigger="onBlur">
           <Form.Item
             name="mobile"
