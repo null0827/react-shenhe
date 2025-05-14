@@ -28,41 +28,6 @@ const storage = new Storage(client);
 
 
 
-
-// // 获取文章列表
-// export async function getArticleListAPI(params: any) {
-//   try {
-//     const response = await database.listDocuments(databaseId, collectionIdPost, params);
-//     return response.documents;
-//   } catch (error) {
-//     console.error("Error fetching article list:", error);
-//     throw error;
-//   }
-// }
-
-// // 删除文章
-// export async function delArticleAPI(id: string) {
-//   try {
-//     const response = await database.deleteDocument(databaseId, collectionIdPost, id);
-//     return response;
-//   } catch (error) {
-//     console.error("Error deleting article:", error);
-//     throw error;
-//   }
-// }
-
-// // 获取文章详情
-// export async function getArticleById(id: string) {
-//   try {
-//     const response = await database.getDocument(databaseId, collectionIdPost, id);
-//     return response;
-//   } catch (error) {
-//     console.error("Error fetching article details:", error);
-//     throw error;
-//   }
-// }
-
-
 // 审核人员登录,审核人员的super_name和super_password字段是在database中的super表中存储的
 export async function loginSuperAPI(super_name: string, super_password: string) {
   try {

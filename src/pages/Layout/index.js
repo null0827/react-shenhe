@@ -10,21 +10,11 @@ import { fetchUserInfo, clearUserInfo } from "@/store/modules/user";
 const { Header, Sider } = Layout;
 
 const items = [
-  // {
-  //   label: "首页",
-  //   key: "/",
-  //   icon: <HomeOutlined />,
-  // },
   {
     label: "审核管理",
     key: "/article",
     icon: <DiffOutlined />,
   },
-  // {
-  //   label: "创建文章",
-  //   key: "/publish",
-  //   icon: <EditOutlined />,
-  // },
 ];
 
 const GeekLayout = () => {
