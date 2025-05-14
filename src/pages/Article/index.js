@@ -33,7 +33,7 @@ const Article = () => {
   const [reqData, setReqData] = useState({
     status: 0, // 默认显示待审核
     page: 1,
-    per_page: 5,
+    per_page: 4,
   });
 
   const statusMap = {

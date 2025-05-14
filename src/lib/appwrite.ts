@@ -127,7 +127,7 @@ export async function deletePostAPI(postId: string) {
 // 增强获取帖子接口
 export async function getPostsAPI(
   page: number = 1,
-  pageSize: number = 5,
+  pageSize: number = 4,
   status?: number
 ) {
   try {
