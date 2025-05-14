@@ -1,49 +1,67 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 //import "@ant-design/v5-patch-for-react-19";
+import {
+  getPostsAPI,
+  deletePostAPI,
+  rejectPostAPI,
+  approvePostAPI,
+} from "@/lib/appwrite.ts";
 import {
   Card,
   Breadcrumb,
   Form,
   Button,
   Radio,
-  DatePicker,
   //Select,
   Popconfirm,
+  Dropdown,
 } from "antd";
 // 引入汉化包 时间选择器显示中文
-import locale from "antd/es/date-picker/locale/zh_CN";
+//import locale from "antd/es/date-picker/locale/zh_CN";
 
 // 导入资源
 import { Table, Tag, Space } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+//import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import img404 from "@/assets/error.png";
 //import { useChannel } from "@/hooks/useChannel";
 import { useEffect, useState } from "react";
-import { delArticleAPI, getArticleListAPI } from "@/apis/article";
+//import { delArticleAPI, getArticleListAPI } from "@/apis/article";
 
 //const { Option } = Select;
-const { RangePicker } = DatePicker;
+//const { RangePicker } = DatePicker;
 
 const Article = () => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   //const { channelList } = useChannel();
   // 准备列数据
-  // 定义状态枚举
-  const status = {
-    1: <Tag color="warning">待审核</Tag>,
-    2: <Tag color="success">审核通过</Tag>,
-    //3: <Tag color="error">审核未通过</Tag>, // 新增状态
+
+  // 获取用户信息
+  const userInfo = useSelector((state) => state.user.userInfo);
+  const [reqData, setReqData] = useState({
+    status: 0, // 默认显示待审核
+    page: 1,
+    per_page: 5,
+  });
+
+  const statusMap = {
+    0: { text: "待审核", color: "warning" },
+    1: { text: "审核通过", color: "success" },
+    2: { text: "审核未通过", color: "error" },
   };
+  // // 定义状态枚举
+  // const status = {
+  //   1: <Tag color="warning">待审核</Tag>,
+  //   2: <Tag color="success">审核通过</Tag>,
+  //   3: <Tag color="error">审核未通过</Tag>,
+  // };
   const columns = [
     {
       title: "封面",
-      dataIndex: "cover",
-      width: 120,
-      render: (cover) => {
-        return (
-          <img src={cover.images[0] || img404} width={80} height={60} alt="" />
-        );
-      },
+      dataIndex: "image_first_url",
+      render: (url) => (
+        <img src={url || img404} width={80} height={60} alt="封面" />
+      ),
     },
     {
       title: "标题",
@@ -52,79 +70,76 @@ const Article = () => {
     },
     {
       title: "状态",
-      dataIndex: "status",
-      // data - 后端返回的状态status 根据它做条件渲染
-      // data === 1 => 待审核
-      // data === 2 => 审核通过
-      render: (data) => status[data],
+      dataIndex: "via_state",
+      render: (state) => (
+        <Tag color={statusMap[state].color}>{statusMap[state].text}</Tag>
+      ),
     },
-    {
-      title: "发布时间",
-      dataIndex: "pubdate",
-    },
-    {
-      title: "阅读数",
-      dataIndex: "read_count",
-    },
-    {
-      title: "评论数",
-      dataIndex: "comment_count",
-    },
-    {
-      title: "点赞数",
-      dataIndex: "like_count",
-    },
+    { title: "作者", dataIndex: "creator_name" },
+
     {
       title: "操作",
-      render: (data) => {
-        return (
-          <Space size="middle">
-            <Button
-              type="primary"
-              shape="circle"
-              icon={<EditOutlined />}
-              onClick={() => navigate(`/publish?id=${data.id}`)}
-            />
+      render: (data) => (
+        <Space>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "approve",
+                  label: (
+                    <Popconfirm
+                      title="确认通过审核？"
+                      onConfirm={() => handleApprove(data.$id)}
+                    >
+                      <span>通过审核</span>
+                    </Popconfirm>
+                  ),
+                },
+                {
+                  key: "reject",
+                  label: (
+                    <Popconfirm
+                      title="确认拒绝审核？"
+                      onConfirm={() => handleReject(data.$id)}
+                    >
+                      <span>拒绝审核</span>
+                    </Popconfirm>
+                  ),
+                },
+              ],
+            }}
+          >
+            <Button type="link">审核操作</Button>
+          </Dropdown>
+
+          {userInfo?.super_type === 1 && (
             <Popconfirm
-              title="删除文章"
-              description="确认要删除当前文章吗?"
-              onConfirm={() => onConfirm(data)}
-              okText="Yes"
-              cancelText="No"
+              title="确认逻辑删除？"
+              onConfirm={() => handleDelete(data.$id)}
             >
-              <Button
-                type="primary"
-                danger
-                shape="circle"
-                icon={<DeleteOutlined />}
-              />
+              <Button danger type="link">
+                删除
+              </Button>
             </Popconfirm>
-          </Space>
-        );
-      },
+          )}
+        </Space>
+      ),
     },
   ];
 
-  // 筛选功能
-  // 1. 准备参数
-  const [reqData, setReqData] = useState({
-    status: "",
-    channel_id: "",
-    begin_pubdate: "",
-    end_pubdate: "",
-    page: 1,
-    per_page: 4,
-  });
-
-  // 获取文章列表
   const [list, setList] = useState([]);
   const [count, setCount] = useState(0);
+  // 获取帖子列表
   useEffect(() => {
-    async function getList() {
-      const res = await getArticleListAPI(reqData);
-      setList(res.data.results);
-      setCount(res.data.total_count);
-    }
+    const getList = async () => {
+      const res = await getPostsAPI(
+        reqData.page,
+        reqData.per_page,
+        reqData.status
+      );
+      setList(res.documents);
+      setCount(res.total);
+    };
     getList();
   }, [reqData]);
 
@@ -143,24 +158,50 @@ const Article = () => {
   //   // reqData依赖项发生变化 重复执行副作用函数
   // };
   // 2. 获取筛选数据
-  const onFinish = (formValue) => {
-    console.log(formValue);
-    // 检查日期是否存在，避免未选择日期时报错
-    const begin_pubdate = formValue.date
-      ? formValue.date[0].format("YYYY-MM-DD")
-      : "";
-    const end_pubdate = formValue.date
-      ? formValue.date[1].format("YYYY-MM-DD")
-      : "";
+  // const onFinish = (formValue) => {
+  //   console.log(formValue);
+  //   // 检查日期是否存在，避免未选择日期时报错
+  //   const begin_pubdate = formValue.date
+  //     ? formValue.date[0].format("YYYY-MM-DD")
+  //     : "";
+  //   const end_pubdate = formValue.date
+  //     ? formValue.date[1].format("YYYY-MM-DD")
+  //     : "";
 
-    // 更新筛选参数
+  //   // 更新筛选参数
+  //   setReqData({
+  //     ...reqData,
+  //     channel_id: formValue.channel_id || "",
+  //     status: formValue.status || "",
+  //     begin_pubdate,
+  //     end_pubdate,
+  //     page: 1, // 重置分页为第一页
+  //   });
+  // };
+
+  // 新增处理函数
+  const handleApprove = async (postId) => {
+    await approvePostAPI(postId);
+    setReqData((prev) => ({ ...prev }));
+  };
+
+  const handleReject = async (postId) => {
+    await rejectPostAPI(postId);
+    setReqData((prev) => ({ ...prev }));
+  };
+
+  // 处理删除
+  const handleDelete = async (postId) => {
+    await deletePostAPI(postId);
+    setReqData((prev) => ({ ...prev })); // 刷新列表
+  };
+
+  // 筛选表单提交
+  const onFinish = (values) => {
     setReqData({
       ...reqData,
-      channel_id: formValue.channel_id || "",
-      status: formValue.status || "",
-      begin_pubdate,
-      end_pubdate,
-      page: 1, // 重置分页为第一页
+      status: values.status,
+      page: 1, // 重置到第一页
     });
   };
 
@@ -174,14 +215,14 @@ const Article = () => {
     });
   };
 
-  // 删除
-  const onConfirm = async (data) => {
-    console.log("删除点击了", data);
-    await delArticleAPI(data.id);
-    setReqData({
-      ...reqData,
-    });
-  };
+  // // 删除
+  // const onConfirm = async (data) => {
+  //   console.log("删除点击了", data);
+  //   await delArticleAPI(data.id);
+  //   setReqData({
+  //     ...reqData,
+  //   });
+  // };
 
   return (
     <div>
@@ -196,13 +237,12 @@ const Article = () => {
         }
         style={{ marginBottom: 20 }}
       >
-        <Form initialValues={{ status: "" }} onFinish={onFinish}>
-          <Form.Item label="状态" name="status">
+        <Form onFinish={onFinish} initialValues={{ status: 0 }}>
+          <Form.Item label="审核状态" name="status">
             <Radio.Group>
-              <Radio value={""}>全部</Radio>
-              <Radio value={1}>待审核</Radio>
-              <Radio value={2}>审核通过</Radio>
-              {/* <Radio value={3}>审核未通过</Radio> */}
+              <Radio value={0}>待审核</Radio>
+              <Radio value={1}>审核通过</Radio>
+              <Radio value={2}>审核未通过</Radio>
             </Radio.Group>
           </Form.Item>
 
@@ -215,11 +255,6 @@ const Article = () => {
               ))}
             </Select>
           </Form.Item> */}
-
-          <Form.Item label="日期" name="date">
-            {/* 传入locale属性 控制中文显示*/}
-            <RangePicker locale={locale}></RangePicker>
-          </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ marginLeft: 40 }}>

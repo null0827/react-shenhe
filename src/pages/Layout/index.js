@@ -1,11 +1,6 @@
 //import "@ant-design/v5-patch-for-react-19";
 import { Layout, Menu, Popconfirm } from "antd";
-import {
-  HomeOutlined,
-  DiffOutlined,
-  EditOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import { DiffOutlined, LogoutOutlined } from "@ant-design/icons";
 import "./index.scss";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -15,25 +10,26 @@ import { fetchUserInfo, clearUserInfo } from "@/store/modules/user";
 const { Header, Sider } = Layout;
 
 const items = [
+  // {
+  //   label: "首页",
+  //   key: "/",
+  //   icon: <HomeOutlined />,
+  // },
   {
-    label: "首页",
-    key: "/",
-    icon: <HomeOutlined />,
-  },
-  {
-    label: "文章管理",
+    label: "审核管理",
     key: "/article",
     icon: <DiffOutlined />,
   },
-  {
-    label: "创建文章",
-    key: "/publish",
-    icon: <EditOutlined />,
-  },
+  // {
+  //   label: "创建文章",
+  //   key: "/publish",
+  //   icon: <EditOutlined />,
+  // },
 ];
 
 const GeekLayout = () => {
   const navigate = useNavigate();
+  const userInfo = useSelector((state) => state.user.userInfo);
   const onMenuClick = (route) => {
     console.log("菜单被点击了", route);
     const path = route.key;
@@ -59,13 +55,16 @@ const GeekLayout = () => {
     navigate("/login");
   };
 
-  const name = useSelector((state) => state.user.userInfo.name);
+  //const name = useSelector((state) => state.user.userInfo.name);
   return (
     <Layout>
       <Header className="header">
         {/* <div className="logo" /> */}
         <div className="user-info">
-          <span className="user-name">{name}</span>
+          <span className="user-name">
+            {userInfo?.super_name} (
+            {userInfo?.super_type === 1 ? "管理员" : "审核员"})
+          </span>
           <span className="user-logout">
             <Popconfirm
               title="是否确认退出？"

@@ -6,6 +6,8 @@ import router from "./router";
 import { Provider } from "react-redux";
 import store from "./store";
 import "normalize.css";
+//import { useEffect } from "react";
+//import { useNavigate } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

@@ -1,45 +1,52 @@
 import "./index.scss";
 import { Card, Form, Input, Button, message } from "antd";
-//import "@ant-design/v5-patch-for-react-19";
-//import logo from "@/assets/logo.png";
+//import { loginSuperAPI } from "@/lib/appwrite";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fetchLogin } from "@/store/modules/user";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+
   const onFinish = async (values) => {
-    console.log(values);
-    //触发异步action fetchLogin
-    await dispatch(fetchLogin(values));
-    //登录成功后跳转到首页
-    navigate("/");
-    message.success("登录成功");
+    try {
+      // 调用Redux异步action处理登录
+      await dispatch(
+        fetchLogin({
+          super_name: values.super_name,
+          super_password: values.super_password,
+        })
+      );
+
+      message.success("登录成功");
+      // 登录后跳转到原始页面或默认页面
+      const from = location.state?.from || "/article";
+      navigate(from, { replace: true });
+    } catch (error) {
+      message.error(error.message);
+    }
   };
+
   return (
     <div className="login">
-      <Card className="login-container">
-        {/* <img className="login-logo" src={logo} alt="" /> */}
+      <Card title="审核管理系统" className="login-container">
         <Form onFinish={onFinish} validateTrigger="onBlur">
           <Form.Item
-            name="mobile"
-            rules={[
-              { required: true, message: "Please input your username!" },
-              {
-                pattern: /^1[3-9]\d{9}$/,
-                message: "请输入正确的手机号",
-              },
-            ]}
+            name="super_name"
+            rules={[{ required: true, message: "请输入用户名" }]}
           >
-            <Input size="large" placeholder="请输入手机号" />
+            <Input placeholder="用户名" size="large" />
           </Form.Item>
+
           <Form.Item
-            name="code"
-            rules={[{ required: true, message: "Please input your password!" }]}
+            name="super_password"
+            rules={[{ required: true, message: "请输入密码" }]}
           >
-            <Input size="large" placeholder="请输入验证码" />
+            <Input.Password placeholder="密码" size="large" />
           </Form.Item>
+
           <Form.Item>
             <Button type="primary" htmlType="submit" size="large" block>
               登录
