@@ -69,6 +69,10 @@ const Article = () => {
       title: "操作",
       render: (data) => (
         <Space>
+          {/* 新增查看按钮 */}
+          <Link to={`/article/detail/${data.$id}`}>
+            <Button type="link">查看详情</Button>
+          </Link>
           <Dropdown
             menu={{
               items: [

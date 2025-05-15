@@ -17,7 +17,7 @@ const items = [
   },
 ];
 
-const GeekLayout = () => {
+const MyLayout = () => {
   const navigate = useNavigate();
   const userInfo = useSelector((state) => state.user.userInfo);
   const onMenuClick = (route) => {
@@ -86,4 +86,4 @@ const GeekLayout = () => {
     </Layout>
   );
 };
-export default GeekLayout;
+export default MyLayout;
